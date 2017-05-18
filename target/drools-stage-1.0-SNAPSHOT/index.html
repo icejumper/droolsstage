@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="mycss.css">
+</head>
+<script src="https://builder.yaas.io/public/js/vendor/jquery/dist/jquery.min.js"></script>
+<script src="https://builder.yaas.io/public/js/vendor/underscore/underscore.js">	</script>
+<script src="https://builder.yaas.io/public/js/vendor/angular/angular.js">	</script>
+<script src="https://builder.yaas.io/public/js/vendor/restangular/dist/restangular.js">	</script>		
+<script>
+
+var app = angular.module('ruleEngineApp', ['restangular']);
+
+app.controller('ruleEngineController', function($scope, Restangular, $http ) {
+	
+	$scope.getReadyToCall = function( restangular ){
+		restangular.setDefaultHeaders({});		
+	}
+
+	$scope.initializeRuleEngineForModule = function(){
+		$scope.getReadyToCall(Restangular, true)
+		if(!$scope.validateModuleName(false))
+		{
+			return;
+		}
+		if(!$scope.validateNumOfRules(false))
+		{
+			return;
+		}
+		
+		Restangular.one("startRuleEngine/" + $scope.moduleName + "/" + $scope.numOfRules).get().then(
+			function(data) {
+				$scope.responseData.push(  data.toString() );
+				$scope.problem =  data.toString().indexOf("true")>-1;
+			},
+			function(response) {
+				$scope.errorMessage = response.status + ' '+response.data.message;
+			}
+		);
+	}
+
+	$scope.validateModuleName = function(clearMsg){
+		if(clearMsg)
+			$scope.errorMessage = ""
+		if ($scope.moduleName)
+			return true;
+		$scope.errorMessage = "Woops, no rules module name was provided";
+		return false;
+	}
+
+	$scope.validateNumOfRules = function( clearMsg){
+		if(clearMsg)
+			$scope.errorMessage = ""
+		if ($scope.numOfRules && $scope.numOfRules > 0)
+			return true;
+		$scope.errorMessage = "Woops, the number of rules to deploy should be provided";
+		return false;
+	}
+
+	$scope.problem = false;
+	$scope.responseData=[]
+	$scope.errorMessage=''
+});
+
+</script>
+
+<body ng-app=ruleEngineApp ng-controller="ruleEngineController" >
+
+<h2>DROOLS: recurrent problems</h2>
+
+
+1. <b>Toggle Rule engine initialization @</b> <a href="#" ng-click="initializeRuleEngineForModule()">/startRuleEngine/</a> <input name=moduleName ng-model="moduleName" value="testModule"/> <input name=numOfRules ng-model="numOfRules" type="number" value="1000"/>
+
+	<h3 ng-show="responseData!=null">Response:</h3>
+	<div style="color:green" ng-repeat="rd in responseData track by $index">{{rd|json}}</div>
+	<p style="color:red" ng-show="errorMessage">{{errorMessage|json}}</p>
+
+</body>
+</html>
