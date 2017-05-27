@@ -28,6 +28,7 @@ import de.hybris.ruleengine.stage.model.Rule;
 import de.hybris.ruleengine.stage.model.RulesBase;
 import de.hybris.ruleengine.stage.model.RulesModule;
 import de.hybris.ruleengine.stage.model.rao.FactsContainerRAO;
+import de.hybris.ruleengine.stage.model.rao.RuleEngineResultRAO;
 
 import java.io.InputStream;
 import java.time.Duration;
@@ -133,8 +134,9 @@ public class RuleEngineStageController
 		final RuleEngineContext ruleEngineContext = new RuleEngineContext();
 		ruleEngineContext.setKieSession(rulesModule.getKieBases().get(0).getKieSessions().get(0));
 		ruleEvaluationContext.setRuleEngineContext(ruleEngineContext);
+		final RuleEngineResultRAO ruleEngineResultRAO = facts.getRuleEngineResultRAO();
 		ruleEvaluationContext.setFacts(ImmutableSet
-				.of(facts.getRuleConfigurationRRD(), facts.getRuleEngineResultRAO(), facts.getWebsiteGroupRAO(),
+				.of(facts.getRuleConfigurationRRD(), ruleEngineResultRAO, facts.getWebsiteGroupRAO(),
 						facts.getRuleGroupExecutionRRD(), facts.getCartRAO()));
 		ruleEvaluationContext.setGlobals(ImmutableMap.of());
 
@@ -142,6 +144,7 @@ public class RuleEngineStageController
 		final RuleEvaluationResult result = ruleEngineStageService.evaluate(ruleEvaluationContext);
 		final Instant end = Instant.now();
 		s += ". Time taken for evaluation: " + Duration.between(start, end).toMillis() + "ms";
+		s += ": [" + ruleEngineResultRAO.getResultMessage() + "]";
 
 		return new ResponseEntity<>(s, HttpStatus.OK);
 	}

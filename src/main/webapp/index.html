@@ -108,7 +108,7 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 	$scope.validateDrlRule = function(clearMsg){
 		if(clearMsg)
 			$scope.errorMessage = ""
-		if ($scope.ruleCode)
+		if ($scope.drlRule)
 			return true;
 		$scope.errorMessage = "Woops, the DRL rule body should be provided";
 		return false;

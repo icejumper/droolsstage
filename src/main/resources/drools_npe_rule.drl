@@ -28,6 +28,7 @@ rule "${rule_uuid}"
 dialect "mvel"
 salience 10
 when
+   $result : RuleEngineResultRAO()
    $config := RuleConfigurationRRD(ruleCode == "order_threshold_percentage_discount")
    exists (RuleGroupExecutionRRD(code == "orderPromotionRuleGroup", allowedToExecute($config) == true))
    accumulate (
@@ -45,5 +46,6 @@ then
       "de.hybris.platform.ruleengineservices.rao.RuleEngineResultRAO" : $v2_set,
       "de.hybris.platform.ruleengineservices.rao.WebsiteGroupRAO" : $v3_set
    ];
+   $result.resultMessage = "Discount of 10 euro applied"
    System.out.println("Discount of 10 euro applied");
 end

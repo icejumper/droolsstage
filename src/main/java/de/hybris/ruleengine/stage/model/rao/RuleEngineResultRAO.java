@@ -16,4 +16,5 @@ import lombok.Data;
 @Data
 public class RuleEngineResultRAO
 {
+	private String resultMessage;
 }
