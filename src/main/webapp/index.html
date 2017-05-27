@@ -41,7 +41,7 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 
 	$scope.deployRule = function(){
 		$scope.getReadyToCall(Restangular, true)
-		if(!$scope.validateModuleName2(false))
+		if(!$scope.validateModuleName(false))
 		{
 			return;
 		}
@@ -54,7 +54,29 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 			return;
 		}
 
-		Restangular.all("deployRule/" + $scope.moduleName2 + "/" + $scope.ruleCode).post($scope.drlRule).then(
+		Restangular.all("deployRule/" + $scope.moduleName + "/" + $scope.ruleCode).post($scope.drlRule).then(
+			function(data) {
+				$scope.responseData.push(  data.toString() );
+				$scope.problem =  data.toString().indexOf("true")>-1;
+			},
+			function(response) {
+				$scope.errorMessage = response.status + ' '+response.data.message;
+			}
+		);
+	}
+
+	$scope.evaluateFacts = function(){
+		$scope.getReadyToCall(Restangular, true)
+		if(!$scope.validateModuleName(false))
+		{
+			return;
+		}
+		if(!$scope.validateFacts(false))
+		{
+			return;
+		}
+
+		Restangular.all("evaluate/" + $scope.moduleName).post($scope.facts).then(
 			function(data) {
 				$scope.responseData.push(  data.toString() );
 				$scope.problem =  data.toString().indexOf("true")>-1;
@@ -69,15 +91,6 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 		if(clearMsg)
 			$scope.errorMessage = ""
 		if ($scope.moduleName)
-			return true;
-		$scope.errorMessage = "Woops, no rules module name was provided";
-		return false;
-	}
-
-	$scope.validateModuleName2 = function(clearMsg){
-		if(clearMsg)
-			$scope.errorMessage = ""
-		if ($scope.moduleName2)
 			return true;
 		$scope.errorMessage = "Woops, no rules module name was provided";
 		return false;
@@ -101,6 +114,15 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 		return false;
 	}
 
+	$scope.validateFacts = function(clearMsg){
+		if(clearMsg)
+			$scope.errorMessage = ""
+		if ($scope.facts)
+			return true;
+		$scope.errorMessage = "Woops, the facts (json) should be provided";
+		return false;
+	}
+
 	$scope.validateNumOfRules = function( clearMsg){
 		if(clearMsg)
 			$scope.errorMessage = ""
@@ -121,19 +143,29 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 
 <h2>DROOLS PLAYGROUND APPLICATION</h2>
 
+&nbsp;&nbsp;<b>Module name:</b>&nbsp;&nbsp;<input name=moduleName ng-model="moduleName" value="testModule"/>
+ <br>
+ <br>
 
-1. <b>Toggle Rule engine initialization @</b> <a href="#" ng-click="initializeRuleEngineForModule()">/startRuleEngine/</a> <input name=moduleName ng-model="moduleName" value="testModule"/> <input name=numOfRules ng-model="numOfRules" type="number" value="1000"/>
+   1. <b>Toggle Rule engine initialization @</b> <a href="#" ng-click="initializeRuleEngineForModule()">/startRuleEngine/</a>&nbsp;&nbsp; Number of rules:&nbsp; <input name=numOfRules ng-model="numOfRules" type="number" value="1000"/>
 <br>
 <br>
 
-2. <b>Deploy DRL Rule @</b> <a href="#" ng-click="deployRule()">/deployRule/</a> <input name=moduleName2 ng-model="moduleName2" value="testModule"/> <input name=ruleCode ng-model="ruleCode"  value="order_threshold_fixed_discount"/>
+2. <b>Deploy DRL Rule @</b> <a href="#" ng-click="deployRule()">/deployRule/</a>&nbsp;&nbsp;  Rule code: &nbsp; <input name=ruleCode ng-model="ruleCode"  value="order_threshold_fixed_discount"/>
 <br>
 <br>&nbsp;&nbsp;
 <textarea name="drlRule" ng-model="drlRule" cols="80" rows="40"></textarea>
+<br>
+<br>
 
-   <h3 ng-show="responseData!=null">Response:</h3>
-   <div style="color:green" ng-repeat="rd in responseData track by $index">{{rd|json}}</div>
-   <p style="color:red" ng-show="errorMessage">{{errorMessage|json}}</p>
+3. <b>Evaluate facts @</b> <a href="#" ng-click="evaluateFacts()">/evaluate/</a>
+<br>
+<br>&nbsp;&nbsp;
+<textarea name="facts" ng-model="facts" cols="80" rows="20"></textarea>
+
+<h3 ng-show="responseData!=null">Response:</h3>
+<div style="color:green" ng-repeat="rd in responseData track by $index">{{rd|json}}</div>
+<p style="color:red" ng-show="errorMessage">{{errorMessage|json}}</p>
 
 
 </body>

@@ -17,9 +17,11 @@ import lombok.Data;
 public class RuleGroupExecutionRRD
 {
 	private String code;
+	private boolean mayExecute = false;
 
 	public boolean allowedToExecute(final RuleConfigurationRRD ruleConfigurationRRD)
 	{
-		return true;
+		mayExecute = mayExecute?false:true;
+		return mayExecute;
 	}
 }

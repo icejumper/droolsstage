@@ -1,0 +1,17 @@
+{
+  "ruleConfigurationRRD": {
+      "ruleCode": "order_threshold_percentage_discount"
+  },
+  "ruleGroupExecutionRRD": {
+    "code": "orderPromotionRuleGroup"
+  },
+  "ruleEngineResultRAO":
+  {},
+  "websiteGroupRAO": {
+    "id": "electronicsPromoGrp"
+  },
+  "cartRAO" : {
+    "currencyIsoCode": "USD",
+    "total": 500
+  }
+}

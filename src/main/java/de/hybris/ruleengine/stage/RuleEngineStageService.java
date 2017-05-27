@@ -72,6 +72,7 @@ public class RuleEngineStageService
 
 	public RuleEvaluationResult evaluate(final RuleEvaluationContext context)
 	{
+		ruleEngineContainerRegistry.lockReadingRegistry();
 		if (LOGGER.isDebugEnabled() && nonNull(context.getFacts()))
 		{
 			LOGGER.debug("Rule evaluation triggered with the facts: {}", context.getFacts().toString());

@@ -19,11 +19,15 @@ import de.hybris.ruleengine.stage.DroolsEventProcessingMode;
 import de.hybris.ruleengine.stage.DroolsSessionType;
 import de.hybris.ruleengine.stage.RuleEngineActionResult;
 import de.hybris.ruleengine.stage.RuleEngineStageService;
+import de.hybris.ruleengine.stage.RuleEvaluationResult;
 import de.hybris.ruleengine.stage.RulesModuleRepo;
+import de.hybris.ruleengine.stage.init.RuleEngineContext;
+import de.hybris.ruleengine.stage.init.RuleEvaluationContext;
 import de.hybris.ruleengine.stage.model.DroolsKieSession;
 import de.hybris.ruleengine.stage.model.Rule;
 import de.hybris.ruleengine.stage.model.RulesBase;
 import de.hybris.ruleengine.stage.model.RulesModule;
+import de.hybris.ruleengine.stage.model.rao.FactsContainerRAO;
 
 import java.io.InputStream;
 import java.time.Duration;
@@ -48,6 +52,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 
@@ -83,14 +89,15 @@ public class RuleEngineStageController
 
 	@CrossOrigin()
 	@RequestMapping(value = "/deployRule/{moduleName}/{ruleCode}", method = RequestMethod.POST)
-	public ResponseEntity<String> deployRule(@PathVariable String moduleName, @PathVariable String ruleCode, @RequestBody String drlRule)
+	public ResponseEntity<String> deployRule(@PathVariable String moduleName, @PathVariable String ruleCode,
+			@RequestBody String drlRule)
 			throws InterruptedException
 	{
-		String s = "-> In GET /startRuleEngine/" + moduleName + "/deployRule";
+		String s = "-> In GET /deployRule/" + moduleName + "/" + ruleCode;
 		LOG.info(s);
 
 		RulesModule rulesModule = RulesModuleRepo.findByName(moduleName);
-		if(isNull(rulesModule))
+		if (isNull(rulesModule))
 		{
 			rulesModule = createNewRulesModule(moduleName, 100);
 			RulesModuleRepo.addRulesModule(rulesModule);
@@ -103,6 +110,38 @@ public class RuleEngineStageController
 		final Instant end = Instant.now();
 		s += ". Time taken for rule deployment [" + ruleCode + "]: " + Duration.between(start, end).toMillis()
 				+ "ms";
+
+		return new ResponseEntity<>(s, HttpStatus.OK);
+	}
+
+	@CrossOrigin()
+	@RequestMapping(value = "/evaluate/{moduleName}", method = RequestMethod.POST)
+	public ResponseEntity<String> evaluate(@PathVariable String moduleName, @RequestBody FactsContainerRAO facts)
+			throws InterruptedException
+	{
+		String s = "-> In GET /evaluate/" + moduleName;
+		LOG.info(s);
+
+		RulesModule rulesModule = RulesModuleRepo.findByName(moduleName);
+		if (isNull(rulesModule))
+		{
+			throw new RuntimeException("No rules module with name [" + moduleName + "] found");
+		}
+
+		final Instant start = Instant.now();
+		final RuleEvaluationContext ruleEvaluationContext = new RuleEvaluationContext();
+		final RuleEngineContext ruleEngineContext = new RuleEngineContext();
+		ruleEngineContext.setKieSession(rulesModule.getKieBases().get(0).getKieSessions().get(0));
+		ruleEvaluationContext.setRuleEngineContext(ruleEngineContext);
+		ruleEvaluationContext.setFacts(ImmutableSet
+				.of(facts.getRuleConfigurationRRD(), facts.getRuleEngineResultRAO(), facts.getWebsiteGroupRAO(),
+						facts.getRuleGroupExecutionRRD(), facts.getCartRAO()));
+		ruleEvaluationContext.setGlobals(ImmutableMap.of());
+
+
+		final RuleEvaluationResult result = ruleEngineStageService.evaluate(ruleEvaluationContext);
+		final Instant end = Instant.now();
+		s += ". Time taken for evaluation: " + Duration.between(start, end).toMillis() + "ms";
 
 		return new ResponseEntity<>(s, HttpStatus.OK);
 	}
@@ -131,7 +170,9 @@ public class RuleEngineStageController
 				.map(i -> createNewRule(rulesModule.getName(), "fibonacciRule" + i)).collect(
 						Collectors.toSet());
 		rulesBase.setRules(rules);
-		rulesBase.setKieSessions(Lists.newArrayList(createNewSession("test-session")));
+		final DroolsKieSession kieSession = createNewSession("test-session");
+		rulesBase.setKieSessions(Lists.newArrayList(kieSession));
+		kieSession.setKieBase(rulesBase);
 		return rulesBase;
 	}
 
@@ -146,7 +187,7 @@ public class RuleEngineStageController
 	private void addRuleToModule(final RulesModule module, final String code, final String drlRule)
 	{
 		final List<RulesBase> kieBases = module.getKieBases();
-		if(isNotEmpty(kieBases))
+		if (isNotEmpty(kieBases))
 		{
 			final RulesBase base = kieBases.get(0);
 			base.getRules().add(createNewRule(module.getName(), code, drlRule));
@@ -173,7 +214,7 @@ public class RuleEngineStageController
 	{
 		final String uuid = UUID.randomUUID().toString();
 		String ruleContent = drlRule.replace("${module_name}", moduleName).replace("${rule_uuid}", uuid)
-					.replace("${rule_code}", code);
+				.replace("${rule_code}", code);
 		final Rule rule = new Rule();
 		rule.setRuleContent(ruleContent);
 		rule.setUuid(uuid);
