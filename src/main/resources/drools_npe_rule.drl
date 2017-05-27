@@ -1,0 +1,49 @@
+package de.hybris.droolsruleengine;
+
+import de.hybris.ruleengine.stage.model.rao.CartRAO;
+import de.hybris.ruleengine.stage.model.rrd.RuleGroupExecutionRRD;
+import de.hybris.ruleengine.stage.model.rrd.RuleConfigurationRRD;
+import java.math.BigDecimal;
+import de.hybris.ruleengine.stage.model.rao.RuleEngineResultRAO;
+import de.hybris.ruleengine.stage.model.rao.WebsiteGroupRAO;
+import java.util.Map;
+
+query rule_0ba98fac51264d3aa467ba897afcc2b3_query(CartRAO $v1, RuleEngineResultRAO $v2, WebsiteGroupRAO $v3)
+   (
+      $v1 := CartRAO()
+      and
+      $v2 := RuleEngineResultRAO()
+      and
+      $v3 := WebsiteGroupRAO(id == "electronicsPromoGrp")
+      and
+      (
+         $v1 := CartRAO(currencyIsoCode == "USD", total >= new BigDecimal("250"))
+      )
+   )
+end
+
+rule "${rule_uuid}"
+@ruleCode("${rule_code}")
+@moduleName("${module_name}")
+dialect "mvel"
+salience 10
+when
+   $config := RuleConfigurationRRD(ruleCode == "order_threshold_percentage_discount")
+   exists (RuleGroupExecutionRRD(code == "orderPromotionRuleGroup", allowedToExecute($config) == true))
+   accumulate (
+      rule_0ba98fac51264d3aa467ba897afcc2b3_query($v1, $v2, $v3;)
+   ;
+      $v1_set : collectSet($v1),
+      $v2_set : collectSet($v2),
+      $v3_set : collectSet($v3),
+      $result_count : count(1)
+   )
+   eval($result_count > 0)
+then
+   Map variables = [
+      "de.hybris.platform.ruleengineservices.rao.CartRAO" : $v1_set,
+      "de.hybris.platform.ruleengineservices.rao.RuleEngineResultRAO" : $v2_set,
+      "de.hybris.platform.ruleengineservices.rao.WebsiteGroupRAO" : $v3_set
+   ];
+   System.out.println("Discount of 10 euro applied");
+end

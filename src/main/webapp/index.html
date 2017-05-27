@@ -39,12 +39,65 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 		);
 	}
 
+	$scope.deployRule = function(){
+		$scope.getReadyToCall(Restangular, true)
+		if(!$scope.validateModuleName2(false))
+		{
+			return;
+		}
+		if(!$scope.validateRuleCode(false))
+		{
+			return;
+		}
+		if(!$scope.validateDrlRule(false))
+		{
+			return;
+		}
+
+		Restangular.all("deployRule/" + $scope.moduleName2 + "/" + $scope.ruleCode).post($scope.drlRule).then(
+			function(data) {
+				$scope.responseData.push(  data.toString() );
+				$scope.problem =  data.toString().indexOf("true")>-1;
+			},
+			function(response) {
+				$scope.errorMessage = response.status + ' '+response.data.message;
+			}
+		);
+	}
+
 	$scope.validateModuleName = function(clearMsg){
 		if(clearMsg)
 			$scope.errorMessage = ""
 		if ($scope.moduleName)
 			return true;
 		$scope.errorMessage = "Woops, no rules module name was provided";
+		return false;
+	}
+
+	$scope.validateModuleName2 = function(clearMsg){
+		if(clearMsg)
+			$scope.errorMessage = ""
+		if ($scope.moduleName2)
+			return true;
+		$scope.errorMessage = "Woops, no rules module name was provided";
+		return false;
+	}
+
+	$scope.validateRuleCode = function(clearMsg){
+		if(clearMsg)
+			$scope.errorMessage = ""
+		if ($scope.ruleCode)
+			return true;
+		$scope.errorMessage = "Woops, the rule code should be provided";
+		return false;
+	}
+
+	$scope.validateDrlRule = function(clearMsg){
+		if(clearMsg)
+			$scope.errorMessage = ""
+		if ($scope.ruleCode)
+			return true;
+		$scope.errorMessage = "Woops, the DRL rule body should be provided";
 		return false;
 	}
 
@@ -66,14 +119,22 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 
 <body ng-app=ruleEngineApp ng-controller="ruleEngineController" >
 
-<h2>DROOLS: recurrent problems</h2>
+<h2>DROOLS PLAYGROUND APPLICATION</h2>
 
 
 1. <b>Toggle Rule engine initialization @</b> <a href="#" ng-click="initializeRuleEngineForModule()">/startRuleEngine/</a> <input name=moduleName ng-model="moduleName" value="testModule"/> <input name=numOfRules ng-model="numOfRules" type="number" value="1000"/>
+<br>
+<br>
 
-	<h3 ng-show="responseData!=null">Response:</h3>
-	<div style="color:green" ng-repeat="rd in responseData track by $index">{{rd|json}}</div>
-	<p style="color:red" ng-show="errorMessage">{{errorMessage|json}}</p>
+2. <b>Deploy DRL Rule @</b> <a href="#" ng-click="deployRule()">/deployRule/</a> <input name=moduleName2 ng-model="moduleName2" value="testModule"/> <input name=ruleCode ng-model="ruleCode"  value="order_threshold_fixed_discount"/>
+<br>
+<br>&nbsp;&nbsp;
+<textarea name="drlRule" ng-model="drlRule" cols="80" rows="40"></textarea>
+
+   <h3 ng-show="responseData!=null">Response:</h3>
+   <div style="color:green" ng-repeat="rd in responseData track by $index">{{rd|json}}</div>
+   <p style="color:red" ng-show="errorMessage">{{errorMessage|json}}</p>
+
 
 </body>
 </html>

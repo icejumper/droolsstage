@@ -11,6 +11,9 @@
 package de.hybris.ruleengine.stage.contollers;
 
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import de.hybris.ruleengine.stage.DroolsEqualityBehavior;
 import de.hybris.ruleengine.stage.DroolsEventProcessingMode;
 import de.hybris.ruleengine.stage.DroolsSessionType;
@@ -25,6 +28,7 @@ import de.hybris.ruleengine.stage.model.RulesModule;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,6 +42,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,7 +62,7 @@ public class RuleEngineStageController
 
 	@CrossOrigin()
 	@RequestMapping(value = "/startRuleEngine/{moduleName}/{numOfRules}", method = RequestMethod.GET)
-	public ResponseEntity<String> riskyConnection(@PathVariable String moduleName, @PathVariable int numOfRules)
+	public ResponseEntity<String> startRuleEngine(@PathVariable String moduleName, @PathVariable int numOfRules)
 			throws InterruptedException
 	{
 		String s = "-> In GET /startRuleEngine/" + moduleName + "/" + numOfRules;
@@ -71,6 +76,32 @@ public class RuleEngineStageController
 		ruleEngineStageService.initialize(rulesModule, null, result);
 		final Instant end = Instant.now();
 		s += ". Time taken for module initialization for " + numOfRules + " rules: " + Duration.between(start, end).toMillis()
+				+ "ms";
+
+		return new ResponseEntity<>(s, HttpStatus.OK);
+	}
+
+	@CrossOrigin()
+	@RequestMapping(value = "/deployRule/{moduleName}/{ruleCode}", method = RequestMethod.POST)
+	public ResponseEntity<String> deployRule(@PathVariable String moduleName, @PathVariable String ruleCode, @RequestBody String drlRule)
+			throws InterruptedException
+	{
+		String s = "-> In GET /startRuleEngine/" + moduleName + "/deployRule";
+		LOG.info(s);
+
+		RulesModule rulesModule = RulesModuleRepo.findByName(moduleName);
+		if(isNull(rulesModule))
+		{
+			rulesModule = createNewRulesModule(moduleName, 100);
+			RulesModuleRepo.addRulesModule(rulesModule);
+		}
+		addRuleToModule(rulesModule, ruleCode, drlRule);
+
+		final Instant start = Instant.now();
+		final RuleEngineActionResult result = new RuleEngineActionResult();
+		ruleEngineStageService.initialize(rulesModule, null, result);
+		final Instant end = Instant.now();
+		s += ". Time taken for rule deployment [" + ruleCode + "]: " + Duration.between(start, end).toMillis()
 				+ "ms";
 
 		return new ResponseEntity<>(s, HttpStatus.OK);
@@ -112,22 +143,37 @@ public class RuleEngineStageController
 		return session;
 	}
 
+	private void addRuleToModule(final RulesModule module, final String code, final String drlRule)
+	{
+		final List<RulesBase> kieBases = module.getKieBases();
+		if(isNotEmpty(kieBases))
+		{
+			final RulesBase base = kieBases.get(0);
+			base.getRules().add(createNewRule(module.getName(), code, drlRule));
+		}
+		RulesModuleRepo.addRulesModule(module);
+	}
+
 	private Rule createNewRule(final String moduleName, final String code)
 	{
 		final InputStream resourceAsStream = this.getClass().getResourceAsStream("/drools_rule_template.drl");
-		final String uuid = UUID.randomUUID().toString();
 		String ruleContent = null;
 		try
 		{
 			ruleContent = new String(IOUtils.toByteArray(resourceAsStream));
-			ruleContent = ruleContent.replace("${module_name}", moduleName).replace("${rule_uuid}", uuid)
-					.replace("${rule_code}", code);
-
 		}
 		catch (final Exception e)
 		{
 			Throwables.propagate(e);
 		}
+		return createNewRule(moduleName, code, ruleContent);
+	}
+
+	private Rule createNewRule(final String moduleName, final String code, final String drlRule)
+	{
+		final String uuid = UUID.randomUUID().toString();
+		String ruleContent = drlRule.replace("${module_name}", moduleName).replace("${rule_uuid}", uuid)
+					.replace("${rule_code}", code);
 		final Rule rule = new Rule();
 		rule.setRuleContent(ruleContent);
 		rule.setUuid(uuid);
