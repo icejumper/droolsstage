@@ -21,6 +21,7 @@ import de.hybris.ruleengine.stage.RuleEngineActionResult;
 import de.hybris.ruleengine.stage.RuleEngineStageService;
 import de.hybris.ruleengine.stage.RuleEvaluationResult;
 import de.hybris.ruleengine.stage.RulesModuleRepo;
+import de.hybris.ruleengine.stage.actions.OrderPercentageDiscountRAOAction;
 import de.hybris.ruleengine.stage.init.RuleEngineContext;
 import de.hybris.ruleengine.stage.init.RuleEvaluationContext;
 import de.hybris.ruleengine.stage.model.DroolsKieSession;
@@ -54,8 +55,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 
 
@@ -66,6 +67,8 @@ public class RuleEngineStageController
 
 	@Autowired
 	private RuleEngineStageService ruleEngineStageService;
+	@Autowired
+	private OrderPercentageDiscountRAOAction orderPercentageDiscountRAOAction;
 
 	@CrossOrigin()
 	@RequestMapping(value = "/startRuleEngine/{moduleName}/{numOfRules}", method = RequestMethod.GET)
@@ -94,16 +97,16 @@ public class RuleEngineStageController
 			@RequestBody String drlRule)
 			throws InterruptedException
 	{
-		String s = "-> In GET /deployRule/" + moduleName + "/" + ruleCode;
+		String s = "-> In POST /deployRule/" + moduleName + "/" + ruleCode;
 		LOG.info(s);
 
 		RulesModule rulesModule = RulesModuleRepo.findByName(moduleName);
 		if (isNull(rulesModule))
 		{
-			rulesModule = createNewRulesModule(moduleName, 100);
+			rulesModule = createNewRulesModule(moduleName, 0);
 			RulesModuleRepo.addRulesModule(rulesModule);
 		}
-		addRuleToModule(rulesModule, ruleCode, drlRule);
+		addRuleToModule(rulesModule, ruleCode, drlRule, 1);
 
 		final Instant start = Instant.now();
 		final RuleEngineActionResult result = new RuleEngineActionResult();
@@ -120,7 +123,7 @@ public class RuleEngineStageController
 	public ResponseEntity<String> evaluate(@PathVariable String moduleName, @RequestBody FactsContainerRAO facts)
 			throws InterruptedException
 	{
-		String s = "-> In GET /evaluate/" + moduleName;
+		String s = "-> In POST /evaluate/" + moduleName;
 		LOG.info(s);
 
 		RulesModule rulesModule = RulesModuleRepo.findByName(moduleName);
@@ -135,16 +138,25 @@ public class RuleEngineStageController
 		ruleEngineContext.setKieSession(rulesModule.getKieBases().get(0).getKieSessions().get(0));
 		ruleEvaluationContext.setRuleEngineContext(ruleEngineContext);
 		final RuleEngineResultRAO ruleEngineResultRAO = facts.getRuleEngineResultRAO();
-		ruleEvaluationContext.setFacts(ImmutableSet
-				.of(facts.getRuleConfigurationRRD(), ruleEngineResultRAO, facts.getWebsiteGroupRAO(),
-						facts.getRuleGroupExecutionRRD(), facts.getCartRAO()));
-		ruleEvaluationContext.setGlobals(ImmutableMap.of());
+		final Set<Object> factsSet = Sets.newHashSet(facts.getCartRAO(), facts.getRuleConfigurationRRD(),
+				ruleEngineResultRAO, facts.getWebsiteGroupRAO(), facts.getRuleGroupExecutionRRD());
+		if(isNotEmpty(facts.getProductRAOList()))
+		{
+			factsSet.addAll(facts.getProductRAOList());
+		}
+		if(isNotEmpty(facts.getOrderEntryRAOList()))
+		{
+			factsSet.addAll(facts.getOrderEntryRAOList());
+		}
+		ruleEvaluationContext.setFacts(factsSet);
+		ruleEvaluationContext.setGlobals(ImmutableMap.of("orderPercentageDiscountRAOAction", orderPercentageDiscountRAOAction));
 
 
 		final RuleEvaluationResult result = ruleEngineStageService.evaluate(ruleEvaluationContext);
 		final Instant end = Instant.now();
+		s += ". [" + ruleEngineResultRAO.getResultMessage() + "]";
 		s += ". Time taken for evaluation: " + Duration.between(start, end).toMillis() + "ms";
-		s += ": [" + ruleEngineResultRAO.getResultMessage() + "]";
+
 
 		return new ResponseEntity<>(s, HttpStatus.OK);
 	}
@@ -187,13 +199,16 @@ public class RuleEngineStageController
 		return session;
 	}
 
-	private void addRuleToModule(final RulesModule module, final String code, final String drlRule)
+	private void addRuleToModule(final RulesModule module, final String code, final String drlRule, final int numOfRules)
 	{
 		final List<RulesBase> kieBases = module.getKieBases();
 		if (isNotEmpty(kieBases))
 		{
 			final RulesBase base = kieBases.get(0);
-			base.getRules().add(createNewRule(module.getName(), code, drlRule));
+			final Set<Rule> ruleSet = IntStream.range(0, numOfRules).boxed()
+					.map(i -> createNewRule(module.getName(), code, drlRule)).collect(Collectors.toSet());
+			LOG.info("Adding {} rules to module {}", ruleSet.size(), module.getName());
+			base.getRules().addAll(ruleSet);
 		}
 		RulesModuleRepo.addRulesModule(module);
 	}

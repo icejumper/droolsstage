@@ -6,13 +6,21 @@
 <script src="https://builder.yaas.io/public/js/vendor/jquery/dist/jquery.min.js"></script>
 <script src="https://builder.yaas.io/public/js/vendor/underscore/underscore.js">	</script>
 <script src="https://builder.yaas.io/public/js/vendor/angular/angular.js">	</script>
-<script src="https://builder.yaas.io/public/js/vendor/restangular/dist/restangular.js">	</script>		
+<script src="https://builder.yaas.io/public/js/vendor/restangular/dist/restangular.js">	</script>
 <script>
 
 var app = angular.module('ruleEngineApp', ['restangular']);
 
-app.controller('ruleEngineController', function($scope, Restangular, $http ) {
-	
+app.controller('ruleEngineController', function($scope, Restangular, $http, customService ) {
+
+	customService.getDrlRuleBody().then(function(response) {
+        $scope.drlRule = response.data;
+	});
+
+	customService.getFactsJson().then(function(response) {
+		$scope.facts = JSON.stringify(response.data, null, "    ");
+	});
+
 	$scope.getReadyToCall = function( restangular ){
 		restangular.setDefaultHeaders({});		
 	}
@@ -137,21 +145,34 @@ app.controller('ruleEngineController', function($scope, Restangular, $http ) {
 	$scope.errorMessage=''
 });
 
+app.service('customService', function($http)
+{
+	this.getDrlRuleBody = function()
+	{
+		return $http.get('samples/percentageDiscountForEOS450D-src/drools_failing_rule.drl');
+	};
+
+	this.getFactsJson = function()
+	{
+		return $http.get('samples/percentageDiscountForEOS450D-src/facts_failing_rule.json');
+	};
+});
+
 </script>
 
 <body ng-app=ruleEngineApp ng-controller="ruleEngineController" >
 
 <h2>DROOLS PLAYGROUND APPLICATION</h2>
 
-&nbsp;&nbsp;<b>Module name:</b>&nbsp;&nbsp;<input name=moduleName ng-model="moduleName" value="testModule"/>
+&nbsp;&nbsp;<b>Module name:</b>&nbsp;&nbsp;<input name=moduleName ng-model="moduleName" ng-init="moduleName='testModule'"/>
  <br>
  <br>
 
-   1. <b>Toggle Rule engine initialization @</b> <a href="#" ng-click="initializeRuleEngineForModule()">/startRuleEngine/</a>&nbsp;&nbsp; Number of rules:&nbsp; <input name=numOfRules ng-model="numOfRules" type="number" value="1000"/>
+   1. <b>Toggle Rule engine initialization @</b> <a href="#" ng-click="initializeRuleEngineForModule()">/startRuleEngine/</a>&nbsp;&nbsp; Number of rules:&nbsp; <input name=numOfRules ng-model="numOfRules" type="number" ng-init="numOfRules=1000"/>
 <br>
 <br>
 
-2. <b>Deploy DRL Rule @</b> <a href="#" ng-click="deployRule()">/deployRule/</a>&nbsp;&nbsp;  Rule code: &nbsp; <input name=ruleCode ng-model="ruleCode"  value="order_threshold_fixed_discount"/>
+2. <b>Deploy DRL Rule @</b> <a href="#" ng-click="deployRule()">/deployRule/</a>&nbsp;&nbsp;  Rule code: &nbsp; <input name=ruleCode ng-model="ruleCode" size="45" ng-init="ruleCode='order_threshold_fixed_discount'"/>
 <br>
 <br>&nbsp;&nbsp;
 <textarea name="drlRule" ng-model="drlRule" cols="80" rows="40"></textarea>

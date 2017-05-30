@@ -13,6 +13,8 @@ package de.hybris.ruleengine.stage.model.rao;
 import de.hybris.ruleengine.stage.model.rrd.RuleConfigurationRRD;
 import de.hybris.ruleengine.stage.model.rrd.RuleGroupExecutionRRD;
 
+import java.util.Set;
+
 import lombok.Data;
 
 
@@ -24,4 +26,7 @@ public class FactsContainerRAO
 	private RuleEngineResultRAO ruleEngineResultRAO;
 	private RuleConfigurationRRD ruleConfigurationRRD;
 	private RuleGroupExecutionRRD ruleGroupExecutionRRD;
+	private Set<OrderEntryRAO> orderEntryRAOList;
+	private Set<ProductRAO> productRAOList;
+
 }

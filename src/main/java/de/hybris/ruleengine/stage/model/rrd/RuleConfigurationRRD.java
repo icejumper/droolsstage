@@ -17,4 +17,6 @@ import lombok.Data;
 public class RuleConfigurationRRD
 {
 	private String ruleCode;
+	private String ruleGroupCode;
+	private Integer maxAllowedRuns;
 }

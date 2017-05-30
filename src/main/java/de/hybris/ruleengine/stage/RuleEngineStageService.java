@@ -125,7 +125,7 @@ public class RuleEngineStageService
 		}
 	}
 
-	protected ExecutionResults tryExecution(final StatelessKieSession session, final BatchExecutionCommand command, // NOSONAR
+	private ExecutionResults tryExecution(final StatelessKieSession session, final BatchExecutionCommand command, // NOSONAR
 			final int currentAttempt)
 	{
 		try

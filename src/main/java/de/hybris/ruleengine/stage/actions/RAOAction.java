@@ -8,15 +8,12 @@
  * Information and shall use it only in accordance with the terms of the
  * license agreement you entered into with SAP.
  */
-package de.hybris.ruleengine.stage.model.rao;
+package de.hybris.ruleengine.stage.actions;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.drools.core.spi.KnowledgeHelper;
 
 
-@Data
-@EqualsAndHashCode(of={"code"})
-public class ProductRAO
+public interface RAOAction
 {
-	private String code;
+	void perform(KnowledgeHelper context);
 }

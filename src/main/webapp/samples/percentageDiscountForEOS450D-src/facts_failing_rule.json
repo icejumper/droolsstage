@@ -1,0 +1,49 @@
+{
+  "ruleConfigurationRRD": {
+    "ruleCode": "order_threshold_fixed_discount",
+    "ruleGroupCode": "defaultRuleGroup-1",
+    "maxAllowedRuns": 1
+  },
+  "ruleGroupExecutionRRD": {
+    "code": "defaultRuleGroup-1"
+  },
+  "ruleEngineResultRAO":
+  {},
+  "websiteGroupRAO": {
+    "id": "testPromoGrp"
+  },
+  "cartRAO" : {
+    "currencyIsoCode": "USD",
+    "total": 500,
+    "entries": [
+      {
+        "quantity" : 2,
+        "product": {
+          "code" : "1382080"
+        }
+      }
+    ]
+  },
+  "orderEntryRAOList" : [
+    {
+      "quantity" : 2,
+      "product": {
+        "code" : "1382080"
+      }
+    },
+    {
+      "quantity" : 1,
+      "product": {
+        "code" : "1382081"
+      }
+    }
+  ],
+  "productRAOList" : [
+    {
+      "code": "1382080"
+    },
+    {
+      "code": "1382081"
+    }
+  ]
+}

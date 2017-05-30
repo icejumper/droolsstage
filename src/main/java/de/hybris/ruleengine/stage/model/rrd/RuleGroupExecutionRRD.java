@@ -10,18 +10,51 @@
  */
 package de.hybris.ruleengine.stage.model.rrd;
 
+import java.util.Map;
+
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 
 @Data
+@EqualsAndHashCode(of={"code"})
 public class RuleGroupExecutionRRD
 {
 	private String code;
-	private boolean mayExecute = false;
+	private Map<String,Integer> executedRules;
 
-	public boolean allowedToExecute(final RuleConfigurationRRD ruleConfigurationRRD)
+	public boolean allowedToExecute(final RuleConfigurationRRD ruleConfig)
 	{
-		mayExecute = mayExecute?false:true;
-		return mayExecute;
+		if (this.executedRules == null)
+		{
+			// first execution of the group
+			return true;
+		}
+		else
+		{
+			if (this.executedRules.entrySet().isEmpty())
+			{
+				// first execution of the group
+				return true;
+			}
+			else
+			{
+				// no more executions allowed
+				// unless this rule has been triggered already and has more than 1 executions allowed
+				final Integer current = this.executedRules.get(ruleConfig.getRuleCode());
+				if (current == null)
+				{
+					// this rule hasn't been tracked, so its not allowed to trigger again
+					// as another rule has "consumed" this group
+					return false;
+				}
+				Integer max = ruleConfig.getMaxAllowedRuns();
+				if (max == null)
+				{
+					max = Integer.valueOf(1);
+				}
+				return current.compareTo(max) < 0;
+			}
+		}
 	}
 }

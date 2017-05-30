@@ -116,7 +116,7 @@ public class DefaultStatelessKieSessionHelper implements StatelessKieSessionHelp
 				}
 			}
 		}
-		if (LOGGER.isDebugEnabled())
+		if (LOGGER.isInfoEnabled())
 		{
 			session.addEventListener(new DebugRuleRuntimeEventListener());
 			session.addEventListener(new DebugAgendaEventListener());

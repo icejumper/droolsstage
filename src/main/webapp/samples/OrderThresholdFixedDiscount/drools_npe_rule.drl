@@ -8,6 +8,8 @@ import de.hybris.ruleengine.stage.model.rao.RuleEngineResultRAO;
 import de.hybris.ruleengine.stage.model.rao.WebsiteGroupRAO;
 import java.util.Map;
 
+global de.hybris.ruleengine.stage.actions.RAOAction orderPercentageDiscountRAOAction;
+
 query rule_0ba98fac51264d3aa467ba897afcc2b3_query(CartRAO $v1, RuleEngineResultRAO $v2, WebsiteGroupRAO $v3)
    (
       $v1 := CartRAO()
@@ -46,6 +48,7 @@ then
       "de.hybris.platform.ruleengineservices.rao.RuleEngineResultRAO" : $v2_set,
       "de.hybris.platform.ruleengineservices.rao.WebsiteGroupRAO" : $v3_set
    ];
-   $result.resultMessage = "Discount of 10 euro applied"
-   System.out.println("Discount of 10 euro applied");
+   $result.resultMessage = "Rule [${rule_uuid}] fired: Discount of 10 euro was applied"
+   System.out.println("Calling orderPercentageDiscountRAOAction.perform(kcontext)");
+   orderPercentageDiscountRAOAction.perform(kcontext);
 end

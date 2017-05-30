@@ -32,6 +32,7 @@ import de.hybris.ruleengine.stage.model.DroolsKieSession;
 import de.hybris.ruleengine.stage.model.Rule;
 import de.hybris.ruleengine.stage.model.RulesBase;
 import de.hybris.ruleengine.stage.model.RulesModule;
+import de.hybris.ruleengine.stage.utils.ModuleVersionUtils;
 import de.hybris.ruleengine.stage.utils.RuleEngineUtils;
 
 import java.util.Collection;
@@ -90,6 +91,8 @@ public class DefaultRuleEngineKieModuleSwapper implements RuleEngineKieModuleSwa
 	private RulePublishingSpliterator rulePublishingSpliterator;
 	@Autowired
 	private RuleEngineBootstrap<KieServices, KieContainer> ruleEngineBootstrap;
+	@Autowired
+	private ModuleVersionUtils moduleVersionUtils;
 
 	private ThreadFactory threadFactory;
 
@@ -192,7 +195,13 @@ public class DefaultRuleEngineKieModuleSwapper implements RuleEngineKieModuleSwa
 	@Override
 	public ReleaseId getReleaseId(final RulesModule module)
 	{
-		final String moduleVersion = RuleEngineUtils.getDeployedRulesModuleVersion(module);
+		final String moduleVersion = moduleVersionUtils.getDeployedRulesModuleVersion(module, false);
+		return getKieServices().newReleaseId(module.getMvnGroupId(), module.getMvnArtifactId(), moduleVersion);
+	}
+
+	protected ReleaseId getNextReleaseId(final RulesModule module)
+	{
+		final String moduleVersion = moduleVersionUtils.getDeployedRulesModuleVersion(module, true);
 		return getKieServices().newReleaseId(module.getMvnGroupId(), module.getMvnArtifactId(), moduleVersion);
 	}
 
@@ -207,7 +216,7 @@ public class DefaultRuleEngineKieModuleSwapper implements RuleEngineKieModuleSwa
 		final KieModuleModel kieModuleModel = getKieServices().newKieModuleModel();
 		kieBases.forEach(base -> addKieBase(kieModuleModel, base));
 
-		final ReleaseId newReleaseId = getReleaseId(module);
+		final ReleaseId newReleaseId = getNextReleaseId(module);
 		final List<KieBuilder> kieBuilders = kieBases.stream()
 				.flatMap(base -> deployRules(module, kieModuleModel, base).stream()).collect(toList());
 
@@ -406,7 +415,7 @@ public class DefaultRuleEngineKieModuleSwapper implements RuleEngineKieModuleSwa
 		result.setModuleName(module.getName());
 		final KieRepository kieRepository = getKieServices().getRepository();
 		LOGGER.info(
-				"Drools Engine Service initialization for '{}' module in tenant '{}' finished. ReleaseId of the new Kie Module: '{}'",
+				"Drools Engine Service initialization for '{}' module finished. ReleaseId of the new Kie Module: '{}'",
 				module.getName(), kieModule.getReleaseId().toExternalForm());
 		kieRepository.addKieModule(kieModule);
 		final KieContainer kieContainer = getKieServices().newKieContainer(releaseId);

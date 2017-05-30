@@ -1,0 +1,63 @@
+package de.hybris.platform.droolsruleengine;
+
+import de.hybris.ruleengine.stage.model.rao.CartRAO;
+import de.hybris.ruleengine.stage.model.rrd.RuleGroupExecutionRRD;
+import de.hybris.ruleengine.stage.model.rrd.RuleConfigurationRRD;
+import java.math.BigDecimal;
+import de.hybris.ruleengine.stage.model.rao.RuleEngineResultRAO;
+import de.hybris.ruleengine.stage.model.rao.WebsiteGroupRAO;
+import java.util.Map;
+import de.hybris.ruleengine.stage.model.rao.OrderEntryRAO;
+import de.hybris.ruleengine.stage.model.rao.ProductRAO;
+
+global de.hybris.ruleengine.stage.actions.RAOAction orderPercentageDiscountRAOAction;
+
+query rule_17026e167dd94d60ab70ee9c9e70fe60_query(CartRAO $v1, RuleEngineResultRAO $v2, WebsiteGroupRAO $v3, ProductRAO $v4, OrderEntryRAO $v5)
+   (
+      $v1 := CartRAO()
+      and
+      $v2 := RuleEngineResultRAO()
+      and
+      $v3 := WebsiteGroupRAO(id == "testPromoGrp")
+      and
+      (
+         $v4 := ProductRAO(code in ("1382080"))
+         and
+         $v5 := OrderEntryRAO(product == $v4, quantity >= new Integer(1))
+         and
+         $v1 := CartRAO(entries contains $v5)
+      )
+   )
+end
+
+rule "${rule_uuid}"
+@ruleCode("${rule_code}")
+@moduleName("${module_name}")
+dialect "mvel"
+salience 0
+when
+   $result : RuleEngineResultRAO()
+   $config := RuleConfigurationRRD(ruleCode == "${rule_code}")
+   exists (RuleGroupExecutionRRD(code == "defaultRuleGroup-1", allowedToExecute($config) == true))
+   accumulate (
+      rule_17026e167dd94d60ab70ee9c9e70fe60_query($v1, $v2, $v3, $v4, $v5;)
+   ;
+      $v1_set : collectSet($v1),
+      $v2_set : collectSet($v2),
+      $v3_set : collectSet($v3),
+      $v4_set : collectSet($v4),
+      $v5_set : collectSet($v5),
+      $result_count : count(1)
+   )
+   eval($result_count > 0)
+then
+   Map variables = [
+      "de.hybris.platform.ruleengineservices.rao.CartRAO" : $v1_set,
+      "de.hybris.platform.ruleengineservices.rao.RuleEngineResultRAO" : $v2_set,
+      "de.hybris.platform.ruleengineservices.rao.WebsiteGroupRAO" : $v3_set,
+      "de.hybris.platform.ruleengineservices.rao.ProductRAO" : $v4_set,
+      "de.hybris.platform.ruleengineservices.rao.OrderEntryRAO" : $v5_set
+   ];
+   $result.resultMessage = "Rule [${rule_uuid}] fired: Discount of 10 percent was applied"
+   orderPercentageDiscountRAOAction.perform(kcontext);
+end

@@ -1,6 +1,8 @@
 {
   "ruleConfigurationRRD": {
-      "ruleCode": "order_threshold_percentage_discount"
+      "ruleCode": "order_threshold_fixed_discount",
+      "ruleGroupCode": "orderPromotionRuleGroup",
+      "maxAllowedRuns": 1
   },
   "ruleGroupExecutionRRD": {
     "code": "orderPromotionRuleGroup"
