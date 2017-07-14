@@ -11,18 +11,29 @@
 package de.hybris.ruleengine.stage.model.rao;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 
 @Data
-public class CartRAO
+@EqualsAndHashCode(of={})
+@ToString(of={})
+public class CartRAO extends AbstractActionedRAO
 {
 	private String code;
-	private BigDecimal total;
+   private BigDecimal total;
 	private BigDecimal subTotal;
 	private BigDecimal deliveryCost;
 	private BigDecimal paymentCost;
+	private BigDecimal originalTotal;
 	private String currencyIsoCode;
 	private Set<OrderEntryRAO> entries;
+	private List<DiscountValueRAO> discountValues;
+	private UserRAO user;
+	private PaymentModeRAO paymentMode;
+	private List<CouponRAO> coupons;
 }

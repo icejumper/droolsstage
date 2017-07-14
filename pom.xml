@@ -10,7 +10,7 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<drools.engine.version>6.5.0.Final</drools.engine.version>
+		<drools.engine.version>7.0.0.Final</drools.engine.version>
 		<java.version>1.8</java.version>
 	</properties>
 	

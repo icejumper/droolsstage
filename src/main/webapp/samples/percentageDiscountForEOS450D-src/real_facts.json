@@ -1,0 +1,243 @@
+{
+  "evaluationTimeRRD": {
+    "evaluationTime" : 1496246540298
+  },
+  "cartRAO":
+  {
+    "actions" : [ ],
+    "code" : "040001",
+    "total" : 1359.61,
+    "subTotal" : 1359.61,
+    "deliveryCost" : 0.00,
+    "paymentCost" : 0.00,
+    "currencyIsoCode" : "USD",
+    "discountValues" : null,
+    "user" : {
+      "id" : "anonymous",
+      "orders" : null,
+      "groups" : [ {
+        "id" : "customergroup"
+      } ]
+    },
+    "paymentMode" : null,
+    "coupons" : null,
+    "originalTotal" : 1359.61
+  },
+  "productRAOList": [
+    {
+      "actions" : null,
+      "code" : "1934794",
+      "categories" : [ {
+        "code" : "brand_10"
+      }, {
+        "code" : "576"
+      } ]
+    }, {
+      "actions" : null,
+      "code" : "1382080",
+      "categories" : [ {
+        "code" : "brand_10"
+      }, {
+        "code" : "578"
+      },
+      {
+        "actions" : null,
+        "code" : "23210",
+        "categories" : [ {
+          "code" : "brand_5"
+        }, {
+          "code" : "576"
+        } ]
+      }
+    ]
+  }],
+  "customerSupportRAO":
+  {
+    "customerSupportAgentActive" : false,
+    "customerEmulationActive" : false
+  },
+  "websiteGroupRAOList": [
+    {
+      "id" : "testPromoGrp"
+    },
+    {
+      "id" : "electronicsPromoGrp"
+    }
+  ],
+  "categoryRAOList": [
+    {
+      "code" : "brand_5"
+    },
+    {
+      "code" : "576"
+    },
+    {
+      "code" : "578"
+    },
+    {
+      "code" : "brand_10"
+    }
+  ],
+  "deliveryModeRAOList": [
+    {
+      "code" : "free-standard-shipping",
+      "cost" : 0,
+      "currencyIsoCode" : "USD"
+    },
+    {
+      "code" : "standard-net",
+      "cost" : 0,
+      "currencyIsoCode" : "USD"
+    }
+  ],
+  "orderEntryRAOList": [
+    {
+      "actions" : null,
+      "entryNumber" : 2,
+      "quantity" : 1,
+      "basePrice" : 110.0,
+      "totalPrice" : 110.00,
+      "currencyIsoCode" : "USD",
+      "order" : {
+        "actions" : [ ],
+        "code" : "040001",
+        "total" : 1359.61,
+        "subTotal" : 1359.61,
+        "deliveryCost" : 0.00,
+        "paymentCost" : 0.00,
+        "currencyIsoCode" : "USD",
+        "discountValues" : null,
+        "user" : {
+          "id" : "anonymous",
+          "orders" : null,
+          "groups" : [ {
+            "id" : "customergroup"
+          } ]
+        },
+        "paymentMode" : null,
+        "coupons" : null,
+        "originalTotal" : 1359.61
+      },
+      "product" : {
+        "actions" : null,
+        "code" : "23210",
+        "categories" : [ {
+          "code" : "brand_5"
+        }, {
+          "code" : "576"
+        } ]
+      },
+      "discountValues" : null,
+      "entryGroupNumbers" : null
+    },
+    {
+      "actions" : null,
+      "entryNumber" : 1,
+      "quantity" : 1,
+      "basePrice" : 99.85,
+      "totalPrice" : 99.85,
+      "currencyIsoCode" : "USD",
+      "order" : {
+        "actions" : [ ],
+        "code" : "040001",
+        "total" : 1359.61,
+        "subTotal" : 1359.61,
+        "deliveryCost" : 0.00,
+        "paymentCost" : 0.00,
+        "currencyIsoCode" : "USD",
+        "discountValues" : null,
+        "user" : {
+          "id" : "anonymous",
+          "orders" : null,
+          "groups" : [ {
+            "id" : "customergroup"
+          } ]
+        },
+        "paymentMode" : null,
+        "coupons" : null,
+        "originalTotal" : 1359.61
+      },
+      "product" : {
+        "actions" : null,
+        "code" : "1934794",
+        "categories" : [ {
+          "code" : "brand_10"
+        }, {
+          "code" : "576"
+        } ]
+      },
+      "discountValues" : null,
+      "entryGroupNumbers" : null
+    },
+    {
+      "actions" : null,
+      "entryNumber" : 0,
+      "quantity" : 2,
+      "basePrice" : 574.88,
+      "totalPrice" : 1149.76,
+      "currencyIsoCode" : "USD",
+      "order" : {
+        "actions" : [ ],
+        "code" : "040001",
+        "total" : 1359.61,
+        "subTotal" : 1359.61,
+        "deliveryCost" : 0.00,
+        "paymentCost" : 0.00,
+        "currencyIsoCode" : "USD",
+        "discountValues" : null,
+        "user" : {
+          "id" : "anonymous",
+          "orders" : null,
+          "groups" : [ {
+            "id" : "customergroup"
+          } ]
+        },
+        "paymentMode" : null,
+        "coupons" : null,
+        "originalTotal" : 1359.61
+      },
+      "product" : {
+        "actions" : null,
+        "code" : "1382080",
+        "categories" : [ {
+          "code" : "brand_10"
+        }, {
+          "code" : "578"
+        } ]
+      },
+      "discountValues" : null,
+      "entryGroupNumbers" : null
+    }
+  ],
+  "userRAO":
+  {
+    "id" : "anonymous",
+    "orders" : null,
+    "groups" : [ {
+      "id" : "customergroup"
+    } ]
+  },
+  "userGroupRAO":
+  {
+    "id" : "customergroup"
+  },
+  "ruleEngineResultRAO":
+  {
+    "startTime" : null,
+    "endTime" : null,
+    "actions" : [ ]
+  },
+  "ruleConfigurationRRD":
+  {
+    "ruleCode" : "order_threshold_fixed_discount",
+    "priority" : null,
+    "maxAllowedRuns" : 1,
+    "currentRuns" : 0,
+    "ruleGroupCode" : "defaultRuleGroup-1"
+  },
+  "ruleGroupExecutionRRD":
+  {
+    "code" : "defaultRuleGroup-1",
+    "executedRules" : null
+  }
+}

@@ -10,18 +10,21 @@
  */
 package de.hybris.ruleengine.stage.actions;
 
+import static java.util.Objects.isNull;
+
 import de.hybris.ruleengine.stage.model.rrd.RuleConfigurationRRD;
 import de.hybris.ruleengine.stage.model.rrd.RuleGroupExecutionRRD;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.spi.KnowledgeHelper;
 import org.kie.api.definition.rule.Rule;
-import org.kie.api.runtime.ObjectFilter;
 import org.kie.api.runtime.rule.FactHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +68,21 @@ public abstract class AbstractRAOAction implements RAOAction
 		return value == null ? null : value.toString();
 	}
 
+	protected void trackRuleExecution(final KnowledgeHelper context)
+	{
+		final String ruleCode = getMetaDataFromRule(context.getRule(), "ruleCode");
+		if (isNull(ruleCode))
+		{
+			return;
+		}
+		final RuleConfigurationRRD config = getRuleConfigurationRRD(ruleCode, context);
+		if (config != null)
+		{
+			config.setCurrentRuns(Integer.valueOf(config.getCurrentRuns() == null ? 1 : config.getCurrentRuns().intValue() + 1));
+			updateFacts(context, config);
+		}
+	}
+
 	private void trackRuleGroupExecution(final RuleGroupExecutionRRD execution, final RuleConfigurationRRD config)
 	{
 		final String ruleCode = config.getRuleCode();
@@ -92,15 +110,9 @@ public abstract class AbstractRAOAction implements RAOAction
 	{
 		RuleConfigurationRRD config = null;
 		// returns this rule's RuleConfigurationRRD object
-		final Collection<FactHandle> configFacts = context.getWorkingMemory().getFactHandles(new ObjectFilter()
-		{
-			// returns this rule's RuleConfigurationRRD object
-			@Override
-			public boolean accept(final Object object)
-			{
-				return object instanceof RuleConfigurationRRD && ruleCode.equals(((RuleConfigurationRRD) object).getRuleCode());
-			}
-		});
+		// returns this rule's RuleConfigurationRRD object
+		final Collection<FactHandle> configFacts = context.getWorkingMemory().getFactHandles(
+				object -> object instanceof RuleConfigurationRRD && ruleCode.equals(((RuleConfigurationRRD) object).getRuleCode()));
 		if (configFacts.size() == 1)
 		{
 			config = (RuleConfigurationRRD) ((InternalFactHandle) configFacts.iterator().next()).getObject();
@@ -131,6 +143,16 @@ public abstract class AbstractRAOAction implements RAOAction
 					ruleGroupCode, count);
 			return null;
 		}
+	}
+
+	protected <T> Collection<T> getFactsOfType(final Class<T> clazz, final KnowledgeHelper context)
+	{
+		final Collection factHandles = context.getWorkingMemory().getFactHandles(clazz::isInstance);
+		if (CollectionUtils.isNotEmpty(factHandles))
+		{
+			return (Collection<T>)factHandles.stream().map(h -> ((InternalFactHandle)h).getObject()).collect(Collectors.toList());
+		}
+		return null;
 	}
 
 	private void updateFacts(final Object engineContext, final Object... facts)

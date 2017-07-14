@@ -10,6 +10,7 @@
  */
 package de.hybris.ruleengine.stage.model.rao;
 
+import de.hybris.ruleengine.stage.model.rrd.EvaluationTimeRRD;
 import de.hybris.ruleengine.stage.model.rrd.RuleConfigurationRRD;
 import de.hybris.ruleengine.stage.model.rrd.RuleGroupExecutionRRD;
 
@@ -22,10 +23,17 @@ import lombok.Data;
 public class FactsContainerRAO
 {
 	private CartRAO cartRAO;
-	private WebsiteGroupRAO websiteGroupRAO;
+	private Set<CategoryRAO> categoryRAOList;
+	private CustomerSupportRAO customerSupportRAO;
+	private Set<DeliveryModeRAO> deliveryModeRAOList;
+	private UserRAO userRAO;
+	private UserGroupRAO userGroupRAO;
+	private CouponRAO couponRAO;
+	private Set<WebsiteGroupRAO> websiteGroupRAOList;
 	private RuleEngineResultRAO ruleEngineResultRAO;
 	private RuleConfigurationRRD ruleConfigurationRRD;
 	private RuleGroupExecutionRRD ruleGroupExecutionRRD;
+	private EvaluationTimeRRD evaluationTimeRRD;
 	private Set<OrderEntryRAO> orderEntryRAOList;
 	private Set<ProductRAO> productRAOList;
 

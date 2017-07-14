@@ -10,11 +10,13 @@
  */
 package de.hybris.ruleengine.stage.model.rao;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 
 @Data
-public class WebsiteGroupRAO
+public class WebsiteGroupRAO implements Serializable
 {
 	private String id;
 }

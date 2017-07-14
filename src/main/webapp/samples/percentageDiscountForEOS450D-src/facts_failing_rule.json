@@ -28,7 +28,15 @@
     {
       "quantity" : 2,
       "product": {
-        "code" : "1382080"
+        "code" : "1382080",
+        "categories": [
+          {
+            "code": "brand_10"
+          },
+          {
+            "code": "578"
+          }
+        ]
       }
     },
     {
@@ -40,10 +48,36 @@
   ],
   "productRAOList" : [
     {
-      "code": "1382080"
+      "code": "1382080",
+      "categories": [
+        {
+          "code": "brand_10"
+        },
+        {
+          "code": "578"
+        }
+      ]
     },
     {
-      "code": "1382081"
+      "code": "1382081",
+      "categories": [
+        {
+          "code": "567"
+        }
+      ]
     }
-  ]
+  ],
+  "customerSupportRAO" :
+  {
+    "customerSupportAgentActive": true,
+    "customerEmulationActive": true
+  },
+  "categoryRAO" : {
+    "code": "567"
+  },
+  "deliveryModeRAO": {
+    "code": "premium",
+    "cost": 5,
+    "currencyIsoCode": "USD"
+  }
 }

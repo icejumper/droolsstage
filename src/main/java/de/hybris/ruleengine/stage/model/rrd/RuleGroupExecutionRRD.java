@@ -10,6 +10,7 @@
  */
 package de.hybris.ruleengine.stage.model.rrd;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import lombok.Data;
@@ -18,7 +19,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(of={"code"})
-public class RuleGroupExecutionRRD
+public class RuleGroupExecutionRRD implements Serializable
 {
 	private String code;
 	private Map<String,Integer> executedRules;

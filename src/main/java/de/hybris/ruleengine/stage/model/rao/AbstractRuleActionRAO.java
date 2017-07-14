@@ -10,16 +10,20 @@
  */
 package de.hybris.ruleengine.stage.model.rao;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 
 @Data
-@EqualsAndHashCode(of={"code"})
-public class ProductRAO extends AbstractActionedRAO
+public class AbstractRuleActionRAO implements Serializable
 {
-	private String code;
-	private Set<CategoryRAO> categories;
+	private String firedRuleCode;
+	private String moduleName;
+	private String actionStrategyKey;
+	private AbstractActionedRAO appliedToObject;
+	private Set<OrderEntryConsumedRAO> consumedEntries;
+	private Map<String,String> metadata;
 }

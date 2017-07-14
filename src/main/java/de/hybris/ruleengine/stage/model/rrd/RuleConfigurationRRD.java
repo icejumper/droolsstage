@@ -11,12 +11,23 @@
 package de.hybris.ruleengine.stage.model.rrd;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 
 @Data
+@EqualsAndHashCode(of={"ruleCode"})
+@ToString(of={})
 public class RuleConfigurationRRD
 {
 	private String ruleCode;
-	private String ruleGroupCode;
+	private Integer priority;
 	private Integer maxAllowedRuns;
+	private Integer currentRuns;
+	private String ruleGroupCode;
+
+	public void setCurrentRuns(final Integer currentRuns)
+	{
+		this.currentRuns = currentRuns;
+	}
 }

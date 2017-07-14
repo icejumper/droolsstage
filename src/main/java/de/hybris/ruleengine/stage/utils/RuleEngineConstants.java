@@ -19,4 +19,6 @@ public class RuleEngineConstants
 			+ File.separatorChar;
 	public static final String MEDIA_CODE_POSTFIX = "RuleMedia";
 	public static final String MEDIA_DRL_FILE_EXTENSION = ".drl";
+
+	public static final String RULEMETADATA_RULECODE = "ruleCode";
 }

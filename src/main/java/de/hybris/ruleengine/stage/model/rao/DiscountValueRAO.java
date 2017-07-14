@@ -10,16 +10,14 @@
  */
 package de.hybris.ruleengine.stage.model.rao;
 
-import java.util.Set;
+import java.math.BigDecimal;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 
 @Data
-@EqualsAndHashCode(of={"code"})
-public class ProductRAO extends AbstractActionedRAO
+public class DiscountValueRAO
 {
-	private String code;
-	private Set<CategoryRAO> categories;
+	private BigDecimal value;
+	private String currencyIsoCode;
 }

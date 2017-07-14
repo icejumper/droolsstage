@@ -11,12 +11,17 @@
 package de.hybris.ruleengine.stage.model.rao;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 
 @Data
-public class OrderEntryRAO
+@EqualsAndHashCode(of={"entryNumber","order"})
+@ToString(of={})
+public class OrderEntryRAO extends AbstractActionedRAO
 {
 	private Integer entryNumber;
 	private int quantity;
@@ -25,5 +30,7 @@ public class OrderEntryRAO
 	private String currencyIsoCode;
 	private CartRAO order;
 	private ProductRAO product;
+	private List<DiscountValueRAO> discountValues;
+	private List<Integer> entryGroupNumbers;
 
 }

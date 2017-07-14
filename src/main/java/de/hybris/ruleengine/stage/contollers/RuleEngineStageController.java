@@ -22,18 +22,22 @@ import de.hybris.ruleengine.stage.RuleEngineStageService;
 import de.hybris.ruleengine.stage.RuleEvaluationResult;
 import de.hybris.ruleengine.stage.RulesModuleRepo;
 import de.hybris.ruleengine.stage.actions.OrderPercentageDiscountRAOAction;
+import de.hybris.ruleengine.stage.drools.ActionTriggeringLimitAgendaFilter;
+import de.hybris.ruleengine.stage.drools.CompoundAgendaFilter;
+import de.hybris.ruleengine.stage.drools.DefaultCompoundAgendaFilter;
 import de.hybris.ruleengine.stage.init.RuleEngineContext;
 import de.hybris.ruleengine.stage.init.RuleEvaluationContext;
 import de.hybris.ruleengine.stage.model.DroolsKieSession;
 import de.hybris.ruleengine.stage.model.Rule;
 import de.hybris.ruleengine.stage.model.RulesBase;
 import de.hybris.ruleengine.stage.model.RulesModule;
+import de.hybris.ruleengine.stage.model.rao.CartRAO;
 import de.hybris.ruleengine.stage.model.rao.FactsContainerRAO;
-import de.hybris.ruleengine.stage.model.rao.RuleEngineResultRAO;
 
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.io.IOUtils;
+import org.kie.api.runtime.rule.AgendaFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,31 +139,62 @@ public class RuleEngineStageController
 
 		final Instant start = Instant.now();
 		final RuleEvaluationContext ruleEvaluationContext = new RuleEvaluationContext();
+		ruleEvaluationContext.setFilter(createAgendaFilter());
 		final RuleEngineContext ruleEngineContext = new RuleEngineContext();
 		ruleEngineContext.setKieSession(rulesModule.getKieBases().get(0).getKieSessions().get(0));
 		ruleEvaluationContext.setRuleEngineContext(ruleEngineContext);
-		final RuleEngineResultRAO ruleEngineResultRAO = facts.getRuleEngineResultRAO();
-		final Set<Object> factsSet = Sets.newHashSet(facts.getCartRAO(), facts.getRuleConfigurationRRD(),
-				ruleEngineResultRAO, facts.getWebsiteGroupRAO(), facts.getRuleGroupExecutionRRD());
-		if(isNotEmpty(facts.getProductRAOList()))
-		{
-			factsSet.addAll(facts.getProductRAOList());
-		}
-		if(isNotEmpty(facts.getOrderEntryRAOList()))
-		{
-			factsSet.addAll(facts.getOrderEntryRAOList());
-		}
+		final CartRAO cartRAO = facts.getCartRAO();
+		cartRAO.setEntries(Sets.newHashSet(facts.getOrderEntryRAOList()));
+		
+		final Set<Object> factsSet = Sets.newLinkedHashSet();
+		factsSet.add(cartRAO);
+		addMultipleFacts(factsSet, facts.getProductRAOList());
+		factsSet.add(facts.getCustomerSupportRAO());
+		addMultipleFacts(factsSet, facts.getWebsiteGroupRAOList());
+		addMultipleFacts(factsSet, facts.getCategoryRAOList());
+		factsSet.add(facts.getEvaluationTimeRRD());
+		addMultipleFacts(factsSet, facts.getDeliveryModeRAOList());
+		addMultipleFacts(factsSet, facts.getOrderEntryRAOList());
+		factsSet.add(facts.getUserRAO());
+		factsSet.add(facts.getUserGroupRAO());
+		
+		factsSet.add(facts.getRuleEngineResultRAO());
+		factsSet.add(facts.getRuleConfigurationRRD());
+		factsSet.add(facts.getRuleGroupExecutionRRD());
+
+//		factsSet.addAll(Sets.newHashSet(facts.getEvaluationTimeRRD(),
+//				 facts.getRuleConfigurationRRD(),  facts.getRuleGroupExecutionRRD(),
+//				 facts.getCouponRAO()));
+
 		ruleEvaluationContext.setFacts(factsSet);
 		ruleEvaluationContext.setGlobals(ImmutableMap.of("orderPercentageDiscountRAOAction", orderPercentageDiscountRAOAction));
 
 
 		final RuleEvaluationResult result = ruleEngineStageService.evaluate(ruleEvaluationContext);
 		final Instant end = Instant.now();
-		s += ". [" + ruleEngineResultRAO.getResultMessage() + "]";
+		//s += ". [" + ruleEngineResultRAO.getResultMessage() + "]";
 		s += ". Time taken for evaluation: " + Duration.between(start, end).toMillis() + "ms";
 
 
 		return new ResponseEntity<>(s, HttpStatus.OK);
+	}
+
+	private AgendaFilter createAgendaFilter()
+	{
+		final List<AgendaFilter> agendaFilters = new ArrayList<>();
+		agendaFilters.add(new ActionTriggeringLimitAgendaFilter());
+		final CompoundAgendaFilter compoundAgendaFilter = new DefaultCompoundAgendaFilter();
+		compoundAgendaFilter.setAgendaFilters(agendaFilters);
+		compoundAgendaFilter.setForceAllEvaluations(false);
+		return compoundAgendaFilter;
+	}
+
+	private <T> void addMultipleFacts(Set<Object> factsSet, Set<T> facts)
+	{
+		if (isNotEmpty(facts))
+		{
+			factsSet.addAll(facts);
+		}
 	}
 
 	private RulesModule createNewRulesModule(final String moduleName, final int numOfRules)

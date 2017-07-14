@@ -10,11 +10,13 @@
  */
 package de.hybris.ruleengine.stage.model.rao;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 
 @Data
-public class RuleEngineResultRAO
+public class RuleEngineResultRAO implements Serializable
 {
 	private String resultMessage;
 }

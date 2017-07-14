@@ -10,16 +10,12 @@
  */
 package de.hybris.ruleengine.stage.model.rao;
 
-import java.util.Set;
+import java.io.Serializable;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 
 @Data
-@EqualsAndHashCode(of={"code"})
-public class ProductRAO extends AbstractActionedRAO
+public class CategoryRAO implements Serializable
 {
 	private String code;
-	private Set<CategoryRAO> categories;
 }
